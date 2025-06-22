@@ -77,7 +77,7 @@ export const CreateTrip = () => {
   
       // Make the API request
       const response = await axios.post(
-        "https://flask-hello-world-w9kv.onrender.com/api/data",
+        "https://moodtrip.onrender.com/api/data",
         requestPayload,
         {
           headers: {
