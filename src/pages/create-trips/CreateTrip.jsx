@@ -58,7 +58,12 @@ export const CreateTrip = () => {
         mood,
         purpose,
         time_of_day: time_of_day || "Evening", // default fallback
-        number_of_people: number_of_people || 2, // default fallback
+        number_of_people: number_of_people 
+          ? parseInt(number_of_people)
+            : type_of_people === "Just Me"
+              ? 1
+              : 2,
+
         type_of_people,
         hours_available: parseInt(hours_available),
         // max_travel_time: 20, // you can make this dynamic later
@@ -78,6 +83,7 @@ export const CreateTrip = () => {
       // Make the API request
       const response = await axios.post(
         "https://moodtrip.onrender.com/api/data",
+        // "http://localhost:5000/api/data",
         requestPayload,
         {
           headers: {
@@ -116,20 +122,82 @@ export const CreateTrip = () => {
       return;
     }
   
+    // try {
+    //   await setDoc(doc(db, "trips", docId), {
+    //     userSelection: formData,
+    //     tripData: parsedTripData, // just hotel array now
+    //     id: docId,
+    //   });
+    //   setLoading(false);
+    //   navigate(`/view-trip/${docId}`);
+    // } catch (error) {
+    //   console.error("Error saving trip:", error);
+    //   toast("An error occurred while saving the trip.");
+    //   setLoading(false);
+    // }
+
     try {
       await setDoc(doc(db, "trips", docId), {
         userSelection: formData,
-        tripData: parsedTripData, // just hotel array now
+        tripData: parsedTripData,
         id: docId,
       });
+    
+      // ✅ Also save to localStorage
+      localStorage.setItem(
+        `trip_${docId}`,
+        JSON.stringify({
+          userSelection: formData,
+          tripData: parsedTripData,
+          id: docId,
+        })
+      );
+    
       setLoading(false);
       navigate(`/view-trip/${docId}`);
+    
     } catch (error) {
       console.error("Error saving trip:", error);
       toast("An error occurred while saving the trip.");
+    
+      // ✅ Even if Firestore fails, still save locally
+      localStorage.setItem(
+        `trip_${docId}`,
+        JSON.stringify({
+          userSelection: formData,
+          tripData: parsedTripData,
+          id: docId,
+        })
+      );
+    
       setLoading(false);
+      navigate(`/view-trip/${docId}`);
     }
   };
+  
+
+  useEffect(() => {
+    const getApproximateLocationFromIP = async () => {
+      try {
+        const response = await axios.get("https://ipinfo.io/json");
+        const data = response.data;
+        const [latitude, longitude] = data.loc.split(',');
+  
+        setFormData(prev => ({
+          ...prev,
+          city: data.city || "",
+          lat: parseFloat(latitude),
+          lon: parseFloat(longitude),
+        }));
+  
+        console.log("IP-based location detected:", data.city, latitude, longitude);
+      } catch (error) {
+        console.error("Error fetching location from IP:", error);
+      }
+    };
+  
+    getApproximateLocationFromIP();
+  }, []);
   
 
   return (
@@ -242,7 +310,7 @@ export const CreateTrip = () => {
 
           
           {/* Location Coordinates */}
-<div>
+{/* <div>
   <h2 className="text-xl my-3 font-medium">Where exactly are you?</h2>
   <div className="flex gap-5">
     <input
@@ -262,7 +330,7 @@ export const CreateTrip = () => {
       className="w-1/2 p-3 border rounded-lg bg-white text-gray-800"
     />
   </div>
-</div>
+</div> */}
 
 
      

@@ -3,39 +3,37 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 export const MyTripCard = ({ item, index }) => {
-  // console.log(item)
-  const [photoUrl, setPhotoUrl] = useState();
-  const GetPlacePhoto = async () => {
-    const data = {
-      textQuery: item?.userSelection?.location?.label,
-    };
-    const result = await getPlaceDetails(data).then((response) => {
-      console.log(response.data.places[0].photos[3].name);
-      const photoUrl = PHOTO_REF_URL.replace(
-        "{NAME}",
-        response.data.places[0].photos[3].name
-      );
-      setPhotoUrl(photoUrl);
-    });
-  };
-  useEffect(() => {
-    item && GetPlacePhoto();
-  }, [item]);
+  const photoName = item?.tripData[0]?.photo_ref;
+
+  console.log(photoName)
+
+  const photoUrl = photoName
+    ? PHOTO_REF_URL.replace("{NAME}", photoName)
+    : "https://via.placeholder.com/300x200?text=No+Image";
+
+  const selection = item?.userSelection || {};
+
   return (
     <Link to={`/view-trip/${item.id}`}>
-      <div className="border rounded-lg hover:scale-105 transition-all hover:shadow-md h-[250px]">
+      <div className="border rounded-lg hover:scale-105 transition-all hover:shadow-md overflow-hidden w-[300px]">
         <img
           src={photoUrl}
-          className="rounded-t-md object-cover w-full h-[130px]"
+          className="rounded-t-md object-cover w-full h-[150px]"
+          alt={selection?.location?.label}
         />
-        <div>
-          <h2 className="font-bold text-lg">
-            {item?.userSelection?.location?.label}
-          </h2>
-          <h2 className="text-sm text-gray-500">
-            {item?.userSelection?.noOfDays} Days trip with
-            {item?.userSelection?.budget} budget{" "}
-          </h2>
+        <div className="p-3 space-y-1">
+          <h2 className="font-bold text-lg">{selection?.location?.label}</h2>
+          <p className="text-sm text-gray-600">
+            {selection?.hours_available} hrs trip • {selection?.budget} budget
+          </p>
+
+          <div className="mt-2 text-xs text-gray-500 space-y-0.5">
+            <p>City: {selection?.city || 'N/A'}</p>
+            <p>Mood: {selection?.mood || 'N/A'}</p>
+            <p>Purpose: {selection?.purpose || 'N/A'}</p>
+            <p>Time of Day: {selection?.time_of_day || 'N/A'}</p>
+            <p>People: {selection?.number_of_people} ({selection?.type_of_people})</p>
+          </div>
         </div>
       </div>
     </Link>

@@ -8,29 +8,58 @@ import { useNavigate } from "react-router-dom";
 export const MyTrips = () => {
   const navigate = useNavigate();
   const [userTrips, setUserTrips] = useState([]);
-  const getUsertrips = async () => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (!user) {
-      navigate("/");
-      return;
-    }
 
+  const getUserTripsFromFirestore = async (userEmail) => {
     const q = query(
       collection(db, "trips"),
-      where("userEmail", "==", user?.email)
+      where("userEmail", "==", userEmail)
     );
     const querySnapshot = await getDocs(q);
-    setUserTrips([]);
+    const trips = [];
     querySnapshot.forEach((doc) => {
-      // doc.data() is never undefined for query doc snapshots
-      //   console.log(doc.id, " => ", doc.data());
-      setUserTrips((prev) => [...prev, doc.data()]);
+      trips.push(doc.data());
     });
+    return trips;
   };
-  console.log(userTrips);
+
+  const getUserTripsFromLocalStorage = () => {
+    const trips = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key.startsWith("trip_")) {
+        const tripData = JSON.parse(localStorage.getItem(key));
+        trips.push(tripData);
+      }
+    }
+    return trips;
+  };
+
+  const loadTrips = async () => {
+    // const user = JSON.parse(localStorage.getItem("user"));
+    // if (!user) {
+    //   navigate("/");
+    //   return;
+    // }
+
+    let trips = [];
+
+    // try {
+    //   const firestoreTrips = await getUserTripsFromFirestore(user.email);
+    //   trips = [...firestoreTrips];
+    // } catch (error) {
+    //   console.error("Error loading trips from Firestore:", error);
+    // }
+
+    const localTrips = getUserTripsFromLocalStorage();
+    trips = [...trips, ...localTrips];
+
+    setUserTrips(trips);
+  };
+
   useEffect(() => {
-    getUsertrips();
+    loadTrips();
   }, []);
+
   return (
     <div>
       <Navbar />
@@ -39,9 +68,9 @@ export const MyTrips = () => {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
           {userTrips?.length > 0
             ? userTrips.map((item, index) => (
-                <MyTripCard item={item} index={index} />
+                <MyTripCard key={index} item={item} index={index} />
               ))
-            : [1, 2, 3].map((item, index) => (
+            : [1, 2, 3].map((_, index) => (
                 <div
                   key={index}
                   className="h-[250px] w-full bg-slate-200 animate-pulse rounded-md"
