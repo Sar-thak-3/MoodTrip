@@ -310,7 +310,7 @@ export const CreateTrip = () => {
 
           
           {/* Location Coordinates */}
-{/* <div>
+<div>
   <h2 className="text-xl my-3 font-medium">Where exactly are you?</h2>
   <div className="flex gap-5">
     <input
@@ -330,7 +330,7 @@ export const CreateTrip = () => {
       className="w-1/2 p-3 border rounded-lg bg-white text-gray-800"
     />
   </div>
-</div> */}
+</div>
 
 
      
